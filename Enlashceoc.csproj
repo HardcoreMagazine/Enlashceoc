@@ -5,6 +5,10 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <StartupObject>Enlashceoc.LaunchPoint</StartupObject>
+	<Version>0.1</Version>
+	<Copyright>HardcoreMagazine</Copyright>
+	<Authors>HardcoreMagazine</Authors>
   </PropertyGroup>
 
 </Project>

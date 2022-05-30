@@ -3,9 +3,103 @@
     // Main game menu
     internal class Menu
     {
-        static void GenerateField(string menuActions)
+        static void ActionNewGame()
         {
-            string borderLine = 
+            //
+        }
+        static void ActionScoreboard()
+        {
+            //
+        }
+        static void ActionExit()
+        {
+            Environment.Exit(0);
+        }
+        static void MenuController()
+        {
+            List<string> menuActions = new List<string>
+            {
+                //new game
+                "\t\t\t\t\t\t" +
+                "> NEW GAME\n\n" +
+                "\t\t\t\t\t\t" +
+                "SCOREBOARD\n\n" +
+                "\t\t\t\t\t\t" +
+                "EXIT\n\n",
+                //scoreboard
+                "\t\t\t\t\t\t" +
+                "NEW GAME\n\n" +
+                "\t\t\t\t\t\t" +
+                "> SCOREBOARD\n\n" +
+                "\t\t\t\t\t\t" +
+                "EXIT\n\n",
+                //exit
+                "\t\t\t\t\t\t" +
+               "NEW GAME\n\n" +
+               "\t\t\t\t\t\t" +
+               "SCOREBOARD\n\n" +
+               "\t\t\t\t\t\t" +
+               "> EXIT\n\n"
+            };
+            int selection = 0;
+            while (true)
+            {
+                Console.TreatControlCAsInput = false;
+                bool loopComplete = false;
+                GenerateUI(menuActions[selection]);
+                var consoleKey = Console.ReadKey(true).Key;
+                switch (consoleKey)
+                {
+                    case ConsoleKey.Enter:
+                        loopComplete = true;
+                        switch (selection)
+                        {
+                            case 0:
+                                ActionNewGame();
+                                break;
+                            case 1:
+                                ActionScoreboard();
+                                break;
+                            case 2:
+                                ActionExit();
+                                break;
+                            default:
+                                break;
+                        }
+                        break;
+                    case ConsoleKey.UpArrow:
+                        if (selection - 1 < 0)
+                        {
+                            selection = 2;
+                        }
+                        else
+                        {
+                            selection--;
+                        }
+                        break;
+                    case ConsoleKey.DownArrow:
+                        if (selection + 1 > 2)
+                        {
+                            selection = 0;
+                        }
+                        else
+                        {
+                            selection++;
+                        }
+                        break;
+                    default:
+                        continue;
+                }
+                Console.Clear();
+                if (loopComplete)
+                {
+                    break;
+                }
+            }
+        }
+        static private void GenerateUI(string menuActions)
+        {
+            string borderLine =
                 "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" +
                 "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" +
                 "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@";
@@ -26,74 +120,14 @@
             Console.WriteLine(gameTitle);
             Console.WriteLine(menuActions);
             Console.Write("\n\n\n\n\n\n\n\n" +
-                          "version: 0.1\n" +
+                          "version: 0.1 - " +
+                          "https://github.com/HardcoreMagazine/Enlashceoc\n" +
                           borderLine);
-            //~arrow key handler
-            ConsoleKey pressedKey = Console.ReadKey().Key;
         }
-        static void ActionNewGame()
-        {
-            //
-        }
-        static void ActionScoreboard()
-        {
-            //
-        }
-        static void ActionExit()
-        {
-            //
-        }
-
-
         // Self-initialization
         public Menu()
         {
-            List<string> menuActions = new List<string>
-            {
-                //ng
-                "\t\t\t\t\t\t" +
-                "> NEW GAME\n\n" +
-                "\t\t\t\t\t\t" +
-                "SCOREBOARD\n\n" +
-                "\t\t\t\t\t\t" +
-                "EXIT\n\n",
-                //sb
-                "\t\t\t\t\t\t" +
-                "NEW GAME\n\n" +
-                "\t\t\t\t\t\t" +
-                "> SCOREBOARD\n\n" +
-                "\t\t\t\t\t\t" +
-                "EXIT\n\n",
-                //exit
-                "\t\t\t\t\t\t" +
-               "NEW GAME\n\n" +
-               "\t\t\t\t\t\t" +
-               "SCOREBOARD\n\n" +
-               "\t\t\t\t\t\t" +
-               "> EXIT\n\n"
-            };
-            while (true)
-            {
-                GenerateField(menuActions[0]);
-                ConsoleKey consoleKey = Console.ReadKey().Key;
-                switch (consoleKey)
-                {
-                    case ConsoleKey.Enter:
-                        //
-                        Console.Clear();
-                        break;
-                    case ConsoleKey.UpArrow:
-                        //
-                        Console.Clear();
-                        break;
-                    case ConsoleKey.DownArrow:
-                        //
-                        Console.Clear();
-                        break;
-                    default:
-                        break;
-                }
-            }
+            MenuController();
         }
     }
 }

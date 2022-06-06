@@ -7,7 +7,7 @@
             //global configuration
             Console.Title = "Enlashceoc";
             Console.TreatControlCAsInput = false;
-            //main menu
+            //call main menu
             Menu menu = new Menu();
         }
     }

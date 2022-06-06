@@ -5,6 +5,7 @@
         static private void GenerateScoreboardUI()
         {
             List<string> scores = new List<string>();
+            //<<TODO>>
             //read from file
             if (false) //if file exists
             {
@@ -15,7 +16,7 @@
                 //create empty scoreboard
                 for (int i = 0; i < 5; i++)
                 {
-                    scores.Add(i + 1 + ". ");
+                    scores.Add(i + 1 + ". empty");
                 }
             }
             //note that file first created on game finish
@@ -23,7 +24,7 @@
                 "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" +
                 "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" +
                 "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@";
-            string sbTitle =
+            string title =
                 borderLine +
                 "\n" +
                 "\t\t\t  _____  _____ ____  _____  ______ ____   ____          _____  _____  \n" +
@@ -35,7 +36,7 @@
                 borderLine +
                 "\n\n";
             //-----------------------------------------------//
-            Console.WriteLine(sbTitle);
+            Console.WriteLine(title);
             for (int i = 0; i < scores.Count; i++) 
                 Console.WriteLine("\t\t\t\t\t" + scores[i] + "\n");
             Console.WriteLine("\n\n" +
@@ -53,7 +54,7 @@
             {
                 GenerateScoreboardUI();
                 var consoleKey = Console.ReadKey(true).Key;
-                if (consoleKey == ConsoleKey.Enter)
+                if (consoleKey == ConsoleKey.Spacebar)
                 {
                     Menu menu = new Menu();
                     break;

@@ -16,12 +16,12 @@
         static void ActionExit()
         {
             Environment.Exit(0);
-            //what would you expect?
         }
 
         static void MenuController()
         {
-            Console.Clear(); //remove traces of previous UI
+            Console.Clear(); //remove traces of previous UI,
+                             //for ex. scoreboard
             List<string> menuActions = new List<string>
             {
                 //new game
@@ -45,42 +45,35 @@
                 "SCOREBOARD\n\n" +
                 "\t\t\t\t\t\t   " +
                 "> EXIT\n\n"
+                //could also use search && replace
+                //but not in this project
             };
-            int selection = 0;
+            byte selection = 0;
+            bool loopComplete = false;
             while (true)
             {
                 //cycle between menu options
                 //each iteration has KeyPress check event:
                 //if ArrowDown or ArrowUp key pressed:
                 //cycle between menu activities
-                //if Enter (Return) key pressed:
+                //if Spacebar key pressed:
                 //switch to selected activity, break the loop
                 //else:
                 //continue the loop, clear console
-                bool loopComplete = false;
+                //from previous output (menu)
                 GenerateMenuUI(menuActions[selection]);
+                //default option: new game
                 var consoleKey = Console.ReadKey(true).Key;
                 switch (consoleKey)
                 {
-                    case ConsoleKey.Enter:
+                    case ConsoleKey.Spacebar:
                         loopComplete = true;
-                        switch (selection)
-                        {
-                            case 0:
-                                ActionNewGame();
-                                break;
-                            case 1:
-                                ActionScoreboard();
-                                break;
-                            case 2:
-                                ActionExit();
-                                break;
-                            default:
-                                break;
-                        }
                         break;
                     case ConsoleKey.UpArrow:
-                        if (selection - 1 < 0)
+                        if (selection - 1 < 0) //using '--' or
+                                               //'++' will cause
+                                               //array index out
+                                               //of bounds exception
                             selection = 2;
                         else
                             selection--;
@@ -92,10 +85,24 @@
                             selection++;
                         break;
                     default:
-                        continue;
+                        break;
                 }
                 if (loopComplete)
-                    break;
+                {
+                    switch (selection)
+                    {
+                        case 0:
+                            ActionNewGame();
+                            break;
+                        case 1:
+                            ActionScoreboard();
+                            break;
+                        case 2:
+                            ActionExit();
+                            break;
+                    }
+                    break; //quit loop
+                }
                 else
                     Console.Clear();
             }

@@ -16,7 +16,7 @@
             Console.Clear();
             int h = Console.WindowHeight; //default: 30
             int w = Console.WindowWidth; //default: 120
-            int plotSize = h * w;
+            int plotSize = h * w - 1; //default: 3599
             int score = 0;
             bool finishState = false; //false == player loss
             while (true)

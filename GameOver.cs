@@ -4,17 +4,17 @@
     {
         static void ActionRetry()
         {
-            NewGame ng = new NewGame();
+            NewGame _ = new NewGame();
         }
 
         static void ActionScoreboard()
         {
-            Scoreboard sb = new Scoreboard();
+            Scoreboard _ = new Scoreboard();
         }
 
         static void ActionMenu()
         {
-            Menu menu = new Menu();
+            Menu _ = new Menu();
         }
 
         static private void GenerateGameOverUIHeader(int score, string titleText)

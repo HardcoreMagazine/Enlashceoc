@@ -1,25 +1,43 @@
-﻿namespace Enlashceoc
+﻿using System.Text.Json;
+
+#pragma warning disable CS8600 //converting null literal or possible null value to non-nullable type.
+#pragma warning disable CS8602 //dereference of a possibly null reference.
+namespace Enlashceoc
 {
     internal class Scoreboard
     {
         static private void GenerateScoreboardUI()
         {
             List<string> scores = new List<string>();
-            //<<TODO>>
-            //read from file
-            if (false) //if file exists
+            //access save data from local drive
+            string path = AppDomain.CurrentDomain.BaseDirectory + "gamedata";
+            if (File.Exists(path)) //check if file exists
             {
-                //write data in 'scores'
+                string jsonString = File.ReadAllText(path); //read json from file
+                SaveData[] scoresData = JsonSerializer.Deserialize<SaveData[]>(jsonString);
+                //deserialize json and write values into SaveData array
+                for (int i = 0; i < scoresData.Length; i++)
+                {
+                    //save recieved values in memory
+                    scores.Add(i + 1 + ". " + scoresData[i].Name + " - " + scoresData[i].Score);
+                }
             }
             else
             {
-                //create empty scoreboard
+                //create "empty" scoreboard
+                //and write it into file
+                List<SaveData> scoresData = new List<SaveData>();
                 for (int i = 0; i < 5; i++)
                 {
-                    scores.Add(i + 1 + ". empty");
+                    scoresData.Add(new SaveData { Name = "empty", Score = 0 });
+                    scores.Add(i + 1 + ". " + scoresData[i].Name + " - " + scoresData[i].Score);
+                }
+                string jsonString = JsonSerializer.Serialize(scoresData);
+                using (StreamWriter wf = File.CreateText(path))
+                {
+                    wf.WriteLine(jsonString);
                 }
             }
-            //note that file first created on game finish
             string borderLine =
                 "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" +
                 "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" +

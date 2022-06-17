@@ -5,12 +5,12 @@
     {
         static void ActionNewGame()
         {
-            NewGame ng = new NewGame();
+            NewGame _ = new NewGame();
         }
 
         static void ActionScoreboard()
         {
-            Scoreboard sb = new Scoreboard();
+            Scoreboard _ = new Scoreboard();
         }
 
         static void ActionExit()
@@ -71,9 +71,9 @@
                         break;
                     case ConsoleKey.UpArrow:
                         if (selection - 1 < 0) //using '--' or
-                                               //'++' will cause
-                                               //array index out
-                                               //of bounds exception
+                                               //'++' will result in
+                                               //'array index out
+                                               //of bounds' exception
                             selection = 2;
                         else
                             selection--;

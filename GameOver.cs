@@ -1,4 +1,6 @@
-﻿namespace Enlashceoc
+﻿using System.Text.Json;
+
+namespace Enlashceoc
 {
     internal class GameOver
     {
@@ -17,6 +19,54 @@
             Menu _ = new Menu();
         }
 
+        static void SaveScore(string playernName, int playerScore)
+        {
+            string path = AppDomain.CurrentDomain.BaseDirectory + "gamedata";
+            //write player name && score in file in local storage
+            if (File.Exists(path)) //check if file exists
+            {
+                string jsonString = File.ReadAllText(path); //read json from file
+                if (!String.IsNullOrWhiteSpace(jsonString))
+                {
+                    SaveData[] scoresData = JsonSerializer.Deserialize<SaveData[]>(jsonString)!;
+                    //deserialize json and write values into SaveData array
+                    for (int i = 0; i < scoresData.Length; i++)
+                    {
+                        if (playerScore > scoresData[i].Score)
+                        {
+                            for (int k = scoresData.Length-1; k > i; k--)
+                            {
+                                scoresData[k] = scoresData[k - 1];
+                            }
+                            scoresData[i] = new SaveData { Name=playernName, Score=playerScore };
+                            //write new data to file with override
+                            string newJsonString = JsonSerializer.Serialize(scoresData);
+                            File.WriteAllText(path, newJsonString);
+                            //and break the loop
+                            break;
+                        }
+                    }
+                }
+            }
+            else //file does not exist
+            {
+                //create "empty" scoreboard && write scoreboard data into file
+                List<SaveData> scoresData = new List<SaveData>();
+                //puts player on first place
+                scoresData.Add(new SaveData { Name = playernName, Score = playerScore });
+                //and fills other slots with "empty - 0"
+                for (int i = 0; i < 4; i++)
+                {
+                    scoresData.Add(new SaveData { Name = "empty", Score = 0 });
+                }
+                string jsonString = JsonSerializer.Serialize(scoresData);
+                using (StreamWriter wf = File.CreateText(path))
+                {
+                    wf.WriteLine(jsonString);
+                }
+            }
+        }
+
         static private void GenerateGameOverUIHeader(int score, string titleText)
         {
             string borderLine =
@@ -30,9 +80,9 @@
                 borderLine +
                 "\n\n\n";
             Console.WriteLine(title);
-            Console.WriteLine("\t\t\t\t\t\t" +
+            Console.WriteLine("\t\t\t\t\t\t     " +
                               "SCORE\n\n" +
-                              "\t\t\t\t\t\t" +
+                              "\t\t\t\t\t\t     " +
                               score +
                               "\n\n");
         }
@@ -43,8 +93,7 @@
             //filter key input
             if ((c >= '0' && c <= '9') ||
                 (c >= 'A' && c <= 'Z') ||
-                (c >= 'a' && c <= 'z') ||
-                c == 13) //enter key
+                (c >= 'a' && c <= 'z'))
                 return c;
             else
                 return '_';
@@ -56,20 +105,14 @@
             if (isNameReq)
             {
                 //capture and return a name
-                Console.WriteLine("\t\t\t\t\t  " +
+                Console.WriteLine("\t\t\t\t\t\t" +
                                   "ENTER YOUR NAME:\n");
-                for (int i = 0; i < 5; i++) //size: 5
-                {
-                    char temp = ProcessUserInput();
-                    if (temp != 13)
-                        playerName += temp;
-                    else
-                    {
-                        if (String.IsNullOrWhiteSpace(playerName))
-                            playerName += "AAAAA";
-                        break;
-                    }
-                }
+                Console.Write("\t\t\t\t\t\t");
+                for (int i = 0; i < 5; i++) //name size: 5
+                    playerName += ProcessUserInput();
+                //override playername if eq "_____" (empty)
+                if (playerName == "_____")
+                    playerName = "AAAAA";
             }
             Console.WriteLine("\n\n\n" + menuActions);
             return playerName;
@@ -114,9 +157,8 @@
                 }
                 if (loopComplete)
                 {
-
-                    //Console.WriteLine(playerName);
-                    //Console.ReadKey(true);
+                    if (type) //save score only if player wins
+                        SaveScore(playerName, score);
                     switch (selection)
                     {
                         case 0:

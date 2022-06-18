@@ -48,7 +48,8 @@
                 }
                 else
                 {
-                    if (score % 10000 == 0)
+                    //win condition [TODO]
+                    if (score % 3 == 0)
                         finishState = true;
                     GameOver gameOver = new GameOver(score, finishState);
                     break;

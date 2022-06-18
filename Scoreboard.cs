@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 
-#pragma warning disable CS8600 //converting null literal or possible null value to non-nullable type.
-#pragma warning disable CS8602 //dereference of a possibly null reference.
+//#pragma warning disable CS8600 //converting null literal or possible null value to non-nullable type.
+//#pragma warning disable CS8602 //dereference of a possibly null reference.
 namespace Enlashceoc
 {
     internal class Scoreboard
@@ -14,13 +14,17 @@ namespace Enlashceoc
             if (File.Exists(path)) //check if file exists
             {
                 string jsonString = File.ReadAllText(path); //read json from file
-                SaveData[] scoresData = JsonSerializer.Deserialize<SaveData[]>(jsonString);
-                //deserialize json and write values into SaveData array
-                for (int i = 0; i < scoresData.Length; i++)
+                if (!String.IsNullOrWhiteSpace(jsonString))
                 {
-                    //save recieved values in memory
-                    scores.Add(i + 1 + ". " + scoresData[i].Name + " - " + scoresData[i].Score);
+                    SaveData[] scoresData = JsonSerializer.Deserialize<SaveData[]>(jsonString)!;
+                    //deserialize json and write values into SaveData array
+                    for (int i = 0; i < scoresData.Length; i++)
+                    {
+                        //save recieved values in memory
+                        scores.Add(i + 1 + ". " + scoresData[i].Name + " - " + scoresData[i].Score);
+                    }
                 }
+
             }
             else
             {
@@ -33,10 +37,7 @@ namespace Enlashceoc
                     scores.Add(i + 1 + ". " + scoresData[i].Name + " - " + scoresData[i].Score);
                 }
                 string jsonString = JsonSerializer.Serialize(scoresData);
-                using (StreamWriter wf = File.CreateText(path))
-                {
-                    wf.WriteLine(jsonString);
-                }
+                File.WriteAllText(path, jsonString);
             }
             string borderLine =
                 "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" +

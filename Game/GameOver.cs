@@ -6,17 +6,17 @@ namespace Enlashceoc.Game
     {
         static void ActionRetry()
         {
-            NewGame _ = new NewGame();
+            _ = new NewGame();
         }
 
         static void ActionScoreboard()
         {
-            Scoreboard _ = new Scoreboard();
+            _ = new Scoreboard();
         }
 
         static void ActionMenu()
         {
-            Menu _ = new Menu();
+            _ = new Menu();
         }
 
         static void SaveScore(string playernName, int playerScore)

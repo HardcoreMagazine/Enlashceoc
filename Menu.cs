@@ -7,12 +7,12 @@ namespace Enlashceoc
     {
         static void ActionNewGame()
         {
-            NewGame _ = new NewGame();
+            _ = new NewGame();
         }
 
         static void ActionScoreboard()
         {
-            Scoreboard _ = new Scoreboard();
+            _ = new Scoreboard();
         }
 
         static void ActionExit()
@@ -142,7 +142,7 @@ namespace Enlashceoc
                           //if we use default 120-char line
                           //"_" symbol will be placed on
                           //next (new) line, which will
-                          //result in "format loss"
+                          //result in format loss
         }
 
         // Self-initialization

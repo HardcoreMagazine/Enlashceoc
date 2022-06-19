@@ -75,7 +75,7 @@ namespace Enlashceoc
                 var consoleKey = Console.ReadKey(true).Key;
                 if (consoleKey == ConsoleKey.Spacebar)
                 {
-                    Menu menu = new Menu();
+                    _ = new Menu();
                     break;
                 }
                 else

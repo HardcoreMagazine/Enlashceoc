@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace Enlashceoc
+namespace Enlashceoc.Game
 {
     internal class GameOver
     {
@@ -26,7 +26,7 @@ namespace Enlashceoc
             if (File.Exists(path)) //check if file exists
             {
                 string jsonString = File.ReadAllText(path); //read json from file
-                if (!String.IsNullOrWhiteSpace(jsonString))
+                if (!string.IsNullOrWhiteSpace(jsonString))
                 {
                     SaveData[] scoresData = JsonSerializer.Deserialize<SaveData[]>(jsonString)!;
                     //deserialize json and write values into SaveData array
@@ -34,11 +34,11 @@ namespace Enlashceoc
                     {
                         if (playerScore > scoresData[i].Score)
                         {
-                            for (int k = scoresData.Length-1; k > i; k--)
+                            for (int k = scoresData.Length - 1; k > i; k--)
                             {
                                 scoresData[k] = scoresData[k - 1];
                             }
-                            scoresData[i] = new SaveData { Name=playernName, Score=playerScore };
+                            scoresData[i] = new SaveData { Name = playernName, Score = playerScore };
                             //write new data to file with override
                             string newJsonString = JsonSerializer.Serialize(scoresData);
                             File.WriteAllText(path, newJsonString);
@@ -91,9 +91,9 @@ namespace Enlashceoc
         {
             char c = Console.ReadKey().KeyChar;
             //filter key input
-            if ((c >= '0' && c <= '9') ||
-                (c >= 'A' && c <= 'Z') ||
-                (c >= 'a' && c <= 'z'))
+            if (c >= '0' && c <= '9' ||
+                c >= 'A' && c <= 'Z' ||
+                c >= 'a' && c <= 'z')
                 return c;
             else
                 return '_';
@@ -130,12 +130,12 @@ namespace Enlashceoc
                 GenerateGameOverUIHeader(score, titleText);
                 //ask for player name if player won && name is empty 
                 //also: *in any case* print menu actions
-                if (type && String.IsNullOrWhiteSpace(playerName))
+                if (type && string.IsNullOrWhiteSpace(playerName))
                     playerName = GenerateGameOverUIBody(menuActions[selection], true)!;
                 else
                     GenerateGameOverUIBody(menuActions[selection], false);
                 ConsoleKey keyPress = Console.ReadKey(true).Key;
-                switch(keyPress)
+                switch (keyPress)
                 {
                     case ConsoleKey.Spacebar:
                         loopComplete = true;
@@ -206,7 +206,7 @@ namespace Enlashceoc
             };
             if (type)
                 GameOverSubcontroller(
-                    score, 
+                    score,
                     menuActions,
                     "\t\t\t\t__     ______  _    _  __          _______ _   _ _ \n" +
                     "\t\t\t\t\\ \\   / / __ \\| |  | | \\ \\        / /_   _| \\ | | |\n" +
@@ -217,7 +217,7 @@ namespace Enlashceoc
                     type);
             else
                 GameOverSubcontroller(
-                    score, 
+                    score,
                     menuActions,
                     "\t\t\t\t  _____          __  __ ______    ______      ________ _____  \n" +
                     "\t\t\t\t / ____|   /\\   |  \\/  |  ____|  / __ \\ \\    / /  ____|  __ \\ \n" +

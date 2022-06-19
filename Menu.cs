@@ -1,4 +1,6 @@
-﻿namespace Enlashceoc
+﻿using Enlashceoc.Game;
+
+namespace Enlashceoc
 {
     // Main game menu
     internal class Menu

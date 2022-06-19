@@ -1,14 +1,11 @@
-﻿namespace Enlashceoc
+﻿namespace Enlashceoc.Game
 {
     internal class NewGame
     {
-        static int RandomGenerator()
+        static int RNG()
         {
-            Random r = new Random(Guid.NewGuid().GetHashCode());
-            return r.Next(int.MaxValue);
-            //min time to generate && print 1000 numbers: 46 ms
-            //max time to generate && print 1000 numbers: 394 ms
-            //data based on 10 test runs
+            Random num = new Random(Guid.NewGuid().GetHashCode());
+            return num.Next(int.MaxValue);
         }
 
         static void NewGameController()
@@ -23,7 +20,7 @@
             {
                 for (int i = 0; i < plotSize; i++)
                 {
-                    int temp = RandomGenerator();
+                    int temp = RNG();
                     if (i % 2 == 0)
                     {
                         if (temp % 3 == 0)
@@ -41,7 +38,7 @@
 
                 }
                 ConsoleKey keyPress = Console.ReadKey(true).Key;
-                if (keyPress != ConsoleKey.Spacebar) 
+                if (keyPress != ConsoleKey.Spacebar)
                 {
                     Console.Clear();
                     score += 100;

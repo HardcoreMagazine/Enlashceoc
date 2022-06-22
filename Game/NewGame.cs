@@ -4,14 +4,24 @@ namespace Enlashceoc.Game
 {
     internal class NewGame
     {
-        private static int X, Y;
+        private static int X = 1, Y = 1;
+        //player position on board
+        //X - character number in line (1-118)
+        //Y - line number (1-28)
         private static int score = 0;
         static int h = Console.WindowHeight; //default: 30
         static int w = Console.WindowWidth; //default: 120
-        //3600 total -> left border indexes: 0, 120, 240, ...
-        //public static string space = "";
-        public static String space = "";
+        public static string space = "";
 
+
+        static void ResetGame()
+        {
+            X = 1; //default X pos
+            Y = 1; //default Y pos
+            space = ""; //default board (empty)
+        }
+
+        //convert (X, Y) position into array index
         static int GetPos(int X, int Y)
         {
             return Y * w + X ;
@@ -22,41 +32,40 @@ namespace Enlashceoc.Game
             byte end = 2; //possible values: 2, 1, 0 - continue, win, quit/loss
             char player = '@';
 
-            //default player start:
-            X = 5; //character number in line
-            Y = 4; //line number
-
             //replace character in string
             //note: doesnt work directly ('space[coord] = player;')
             //see: error code CS0200
             char[] temp = space.ToCharArray();
             temp[GetPos(X, Y)] = player;
             space = new string(temp);
+            Console.Write(space);
             
             //read key input until valid key pressed
             ConsoleKey input = Console.ReadKey(true).Key;
-            /*while (input != ConsoleKey.UpArrow || input != ConsoleKey.DownArrow ||
-                   input != ConsoleKey.RightArrow || input != ConsoleKey.LeftArrow ||
-                   input != ConsoleKey.Spacebar || input != ConsoleKey.Escape)
-            {
-                input = Console.ReadKey(true).Key;
-            }
-            */
             switch (input)
             {
-                case ConsoleKey.UpArrow:
-                    score += 100;
+                case ConsoleKey.UpArrow: //move up
+                    if (Y - 1 > 0)
+                        Y -= 1;
                     break;
-                case ConsoleKey.DownArrow:
+                case ConsoleKey.DownArrow: //move down
+                    if (Y + 1 < h - 1)
+                        Y += 1;
                     break;
-                case ConsoleKey.RightArrow:
+                case ConsoleKey.RightArrow: //move right
+                    if (X + 1 < w - 1)
+                        X += 1;
                     break;
-                case ConsoleKey.LeftArrow:
+                case ConsoleKey.LeftArrow: //move left
+                    if (X - 1 > 0)
+                        X -= 1;
                     break;
                 case ConsoleKey.Spacebar:
+                    score += 100;
                     break;
                 case ConsoleKey.Escape: //quit game
                     end = 0;
+                    ResetGame();
                     break;
                 default:
                     break;
@@ -64,9 +73,10 @@ namespace Enlashceoc.Game
             return end;
         }
 
-        static void Board()
+        //overrides 'space' variable each itaration
+        //cleaning board from unused elements
+        static void GenerateBoard()
         {
-
             string horizontalWall = "##############################" +
                                     "##############################" +
                                     "##############################" +
@@ -77,11 +87,13 @@ namespace Enlashceoc.Game
             {
                 for (int j = 0; j < w; j++)
                 {
-                    space += " ";
+                    if (j % 119 == 0)
+                        space += "#"; //vertical wall
+                    else
+                        space += " "; //space
                 }
             }
             space += horizontalWall.Remove(119);
-            Console.Write(space);
         }
 
         static void GameController()
@@ -89,7 +101,7 @@ namespace Enlashceoc.Game
             Console.Clear(); //clean console from old UI
             while (true)
             {
-                Board(); //'space' gets overwritten each button click
+                GenerateBoard(); //'space' gets overwritten each button click
                          //-> no need to manually remove old elements
                 switch (PlayerController())
                 {

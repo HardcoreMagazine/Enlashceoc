@@ -4,16 +4,16 @@ namespace Enlashceoc.Game
 {
     internal class NewGame
     {
-        private static int X = 1, Y = 1;
-        //player position on board
-        //X - character number in line (1-118)
-        //Y - line number (1-28)
+        private static char heading = ' ';
+        private static int X = 1, Y = 1; //player position
+        //X - character number in row (1-118)
+        //Y - row number (1-28)
         private static int score = 0;
         static int h = Console.WindowHeight; //default: 30
         static int w = Console.WindowWidth; //default: 120
         public static string space = "";
 
-
+        // Reset board && player position to default values
         static void ResetGame()
         {
             X = 1; //default X pos
@@ -21,60 +21,125 @@ namespace Enlashceoc.Game
             space = ""; //default board (empty)
         }
 
-        //convert (X, Y) position into array index
-        static int GetPos(int X, int Y)
+        // Convert (X, Y) position into array index
+        static int GetPos(int Xpos, int Ypos)
         {
-            return Y * w + X ;
+            return Ypos * w + Xpos ;
+            // 'space' (board) string is basically array of characters.
+            // By default, 'space' size is 3599 characters;
+            // for ease of access to player position
+            // it's INDEX represnted by X, Y values (2D-axis).
+            // In order to retrieve object position (CELL) in 'space'
+            // we need to find characters ROW (range): Y * window_width
+            // && add to this number COLUMN number: + X
         }
 
+        // Check if path is blocked by an obstacle
+        // Possible obstacles:
+        // wall - '#';
+        // chest - 'C';
+        static bool IsObstacle(int Xpos, int Ypos)
+        {
+            char cell = space[GetPos(Xpos, Ypos)];
+            if (cell == '#' || cell == 'C') //return true if obstacle found
+                return true;
+            else
+                return false;
+        }
+
+        // Use object in front on player [handler]
+        static void ActionUseObject()
+        {
+            int Xpos = X, Ypos = Y;
+            switch (heading)
+            {
+                case 'u':
+                    Ypos -= 1;
+                    break;
+                case 'd':
+                    Ypos += 1;
+                    break;
+                case 'l':
+                    Xpos -= 1;
+                    break;
+                case 'r':
+                    Xpos += 1;
+                    break;
+                default:
+                    return; //quit function if 'heading' is yet empty
+            }
+            char nextCell = space[GetPos(Xpos, Ypos)];
+            if (nextCell == 'C')
+            {
+                score += 1000;
+                //<TODO>: Chest generation && deletion
+            }
+        }
+
+        // Adds player on board, processes player input
+        // Note: player is constantly moving, do not use this function
+        // for object placement!
         static byte PlayerController()
         {
-            byte end = 2; //possible values: 2, 1, 0 - continue, win, quit/loss
+            byte actionResult = 2; //possible values: 2, 1, 0 - continue, win, quit/loss
             char player = '@';
 
-            //replace character in string
-            //note: doesnt work directly ('space[coord] = player;')
-            //see: error code CS0200
+            // Replace character in string
+            // note: doesnt work directly ('space[coord] = player;')
+            // see: error code CS0200
             char[] temp = space.ToCharArray();
             temp[GetPos(X, Y)] = player;
             space = new string(temp);
-            Console.Write(space);
             
-            //read key input until valid key pressed
+            // Print board
+            Console.Write(space); //will be removed in future -- because map isnt yet generated
+
             ConsoleKey input = Console.ReadKey(true).Key;
             switch (input)
             {
                 case ConsoleKey.UpArrow: //move up
-                    if (Y - 1 > 0)
+                    if (!IsObstacle(X, Y - 1))
+                    {
+                        heading = 'u';
                         Y -= 1;
+                    }
                     break;
                 case ConsoleKey.DownArrow: //move down
-                    if (Y + 1 < h - 1)
+                    if (!IsObstacle(X, Y + 1))
+                    {
+                        heading = 'd';
                         Y += 1;
-                    break;
-                case ConsoleKey.RightArrow: //move right
-                    if (X + 1 < w - 1)
-                        X += 1;
+                    }
                     break;
                 case ConsoleKey.LeftArrow: //move left
-                    if (X - 1 > 0)
+                    if (!IsObstacle(X - 1, Y))
+                    {
+                        heading = 'l';
                         X -= 1;
+                    }
+                    break;
+                case ConsoleKey.RightArrow: //move right
+                    if (!IsObstacle(X + 1, Y))
+                    {
+                        heading = 'r';
+                        X += 1;
+                    }
                     break;
                 case ConsoleKey.Spacebar:
-                    score += 100;
+                    ActionUseObject();
                     break;
                 case ConsoleKey.Escape: //quit game
-                    end = 0;
+                    actionResult = 0;
                     ResetGame();
                     break;
                 default:
                     break;
             }
-            return end;
+            return actionResult;
         }
 
-        //overrides 'space' variable each itaration
-        //cleaning board from unused elements
+        // Overrides 'space' variable each itaration,
+        // cleaning board from unused elements
         static void GenerateBoard()
         {
             string horizontalWall = "##############################" +
@@ -102,7 +167,12 @@ namespace Enlashceoc.Game
             while (true)
             {
                 GenerateBoard(); //'space' gets overwritten each button click
-                         //-> no need to manually remove old elements
+                                 //-> no need to manually remove old elements
+                //temporal fix to test 'Chest' object (&& spacebar handling)
+                char[] temp = space.ToCharArray();
+                temp[GetPos(4, 1)] = 'C';
+                space = new string(temp);
+
                 switch (PlayerController())
                 {
                     case 2: //continue game
@@ -111,9 +181,11 @@ namespace Enlashceoc.Game
                         break;
                     case 1: //player won
                         _ = new GameOver(score, true);
+                        score = 0; //dont remove this or game will break
                         break;
-                    default: //player loss/pressed ESC ('case 0')
+                    default: //player loss/quit (also covers 'case 0')
                         _ = new GameOver(score, false);
+                        score = 0; //dont remove this or game will break
                         break;
                 }
             }

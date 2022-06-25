@@ -4,22 +4,24 @@
     {
         private static char heading = ' ';
         private static int X = 1, Y = 1; //player position
-        //X - character number in row (1-118)
-        //Y - row number (1-28)
+        //X - character number in row (allowed values: 1..118; total: 0..119)
+        //Y - row number (allowed values: 1..28; total: 0..29)
         private static int score = 0;
+        private static bool playerHasKey = false; //key is required to escape
         static int h = Console.WindowHeight; //default: 30
         static int w = Console.WindowWidth; //default: 120
-        public static string space = "";
+        private static string space = "";
 
         // Reset board && player position to default values
         static void ResetGame()
         {
-            X = 1; //default X pos
-            Y = 1; //default Y pos
-            space = ""; //default board (empty)
+            X = 1; //default player X pos
+            Y = 1; //default player Y pos
+            space = "";
+            playerHasKey = false;
         }
 
-        // Replace single object on board
+        // Replace single object on board by X, Y coordinates
         static void ReplaceObject(int Xpos, int Ypos, char replacement)
         {
             // Note: does not work directly ('space[index] = replacement;')
@@ -29,7 +31,15 @@
             space = new string(temp);
         }
 
-        // Convert (X, Y) position into array index
+        // Replace single object on board by index
+        static void ReplaceObject(int index, char replacement)
+        {
+            char[] temp = space.ToCharArray();
+            temp[index] = replacement;
+            space = new string(temp);
+        }
+
+        // Convert X, Y coordinates into array index
         static int GetPos(int Xpos, int Ypos)
         {
             return Ypos * w + Xpos ;
@@ -42,14 +52,27 @@
             // && add to this number COLUMN number: + X
         }
 
+        // Generate pseudo-random number
+        static int RNG(int? maxValue = null)
+        {
+            Random num = new Random(Guid.NewGuid().GetHashCode());
+            if (maxValue == null)
+                return num.Next(int.MaxValue);
+            else
+                return num.Next((int)maxValue);
+        }
+
         // Check if path is blocked by an obstacle
         // Possible obstacles:
-        // wall - '#';
-        // chest - 'C';
+        // wall - #;
+        // chest - C;
+        // key - K;
+        // locked door - L.
         static bool IsObstacle(int Xpos, int Ypos)
         {
             char cell = space[GetPos(Xpos, Ypos)];
-            if (cell == '#' || cell == 'C') //return true if obstacle found
+            if (cell == '#' || cell == 'C' ||
+                cell == 'K' || cell == 'L') //return true if obstacle found
                 return true;
             else
                 return false;
@@ -77,10 +100,21 @@
                     return; //quit function if 'heading' is yet empty
             }
             char nextCell = space[GetPos(Xpos, Ypos)];
-            if (nextCell == 'C')
+            switch (nextCell)
             {
-                score += 1000; //apply effect
-                ReplaceObject(Xpos, Ypos, ' '); //dispose object
+                case 'C':
+                    score += 1000; //apply effect
+                    ReplaceObject(Xpos, Ypos, ' '); //dispose object
+                    break;
+                case 'K':
+                    playerHasKey = true;
+                    break;
+                case 'L':
+                    if (playerHasKey)
+                        ReplaceObject(Xpos, Ypos, ' ');
+                    break;
+                default:
+                    return;
             }
         }
 
@@ -146,7 +180,7 @@
             return actionResult;
         }
 
-        // Overrides 'space' variable, creating empty board
+        // Overrides 'space' variable, creating empty board with walls
         static void GenerateEmptyBoard()
         {
             string horizontalWall = "##############################" +
@@ -155,9 +189,9 @@
                                     "##############################";
             //create field inside walls with no objects
             space += horizontalWall;
-            for (int i = 0; i < h-2; i++)
+            for (int i = 1; i < h-2; i++) //Y axis (row)
             {
-                for (int j = 0; j < w; j++)
+                for (int j = 0; j < w; j++) //X axis (column)
                 {
                     if (j % 119 == 0)
                         space += "#"; //vertical wall
@@ -168,11 +202,28 @@
             space += horizontalWall.Remove(119);
         }
 
+        // Override 'space' variable, creating playable level
+        static void GenerateLevel()
+        {
+            // Create level borders
+            GenerateEmptyBoard();
+
+            // Create player exit (locked door)
+            // Stepping into that cell will result in player win
+            List<int> possibleExits = new List<int>();
+            for (int k = (w - 1) *  2; k < w * h - 2 * w; k += w) //default: w*h = 3600
+            {
+                possibleExits.Add(k + 1); //238+1, ...., 3479+1
+            }
+            int randomIndex = RNG(possibleExits.Count - 1);
+            ReplaceObject(possibleExits[randomIndex], 'L');
+        }
+
         static void GameController()
         {
             Console.Clear(); //clean console from old UI
-            GenerateEmptyBoard();
-            ReplaceObject(4, 1, 'C');
+            GenerateLevel();
+            ReplaceObject(4, 1, 'C'); //chest sample -- only for testing
             while (true)
             {
                 //GenerateBoard(); //'space' gets overwritten each button click

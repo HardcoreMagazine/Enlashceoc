@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace Enlashceoc.Game
+﻿namespace Enlashceoc.Game
 {
     internal class NewGame
     {
@@ -19,6 +17,16 @@ namespace Enlashceoc.Game
             X = 1; //default X pos
             Y = 1; //default Y pos
             space = ""; //default board (empty)
+        }
+
+        // Replace single object on board
+        static void ReplaceObject(int Xpos, int Ypos, char replacement)
+        {
+            // Note: does not work directly ('space[index] = replacement;')
+            // see error code 'CS0200'
+            char[] temp = space.ToCharArray();
+            temp[GetPos(Xpos, Ypos)] = replacement;
+            space = new string(temp);
         }
 
         // Convert (X, Y) position into array index
@@ -71,8 +79,8 @@ namespace Enlashceoc.Game
             char nextCell = space[GetPos(Xpos, Ypos)];
             if (nextCell == 'C')
             {
-                score += 1000;
-                //<TODO>: Chest generation && deletion
+                score += 1000; //apply effect
+                ReplaceObject(Xpos, Ypos, ' '); //dispose object
             }
         }
 
@@ -84,22 +92,19 @@ namespace Enlashceoc.Game
             byte actionResult = 2; //possible values: 2, 1, 0 - continue, win, quit/loss
             char player = '@';
 
-            // Replace character in string
-            // note: doesnt work directly ('space[coord] = player;')
-            // see: error code CS0200
-            char[] temp = space.ToCharArray();
-            temp[GetPos(X, Y)] = player;
-            space = new string(temp);
+            ReplaceObject(X, Y, player);
             
             // Print board
             Console.Write(space); //will be removed in future -- because map isnt yet generated
 
+            // Player actions handling
             ConsoleKey input = Console.ReadKey(true).Key;
             switch (input)
             {
                 case ConsoleKey.UpArrow: //move up
                     if (!IsObstacle(X, Y - 1))
                     {
+                        ReplaceObject(X, Y, ' '); //remove old player obj from board
                         heading = 'u';
                         Y -= 1;
                     }
@@ -107,6 +112,7 @@ namespace Enlashceoc.Game
                 case ConsoleKey.DownArrow: //move down
                     if (!IsObstacle(X, Y + 1))
                     {
+                        ReplaceObject(X, Y, ' ');
                         heading = 'd';
                         Y += 1;
                     }
@@ -114,6 +120,7 @@ namespace Enlashceoc.Game
                 case ConsoleKey.LeftArrow: //move left
                     if (!IsObstacle(X - 1, Y))
                     {
+                        ReplaceObject(X, Y, ' '); 
                         heading = 'l';
                         X -= 1;
                     }
@@ -121,11 +128,12 @@ namespace Enlashceoc.Game
                 case ConsoleKey.RightArrow: //move right
                     if (!IsObstacle(X + 1, Y))
                     {
+                        ReplaceObject(X, Y, ' ');
                         heading = 'r';
                         X += 1;
                     }
                     break;
-                case ConsoleKey.Spacebar:
+                case ConsoleKey.Spacebar: //use item
                     ActionUseObject();
                     break;
                 case ConsoleKey.Escape: //quit game
@@ -138,9 +146,8 @@ namespace Enlashceoc.Game
             return actionResult;
         }
 
-        // Overrides 'space' variable each itaration,
-        // cleaning board from unused elements
-        static void GenerateBoard()
+        // Overrides 'space' variable, creating empty board
+        static void GenerateEmptyBoard()
         {
             string horizontalWall = "##############################" +
                                     "##############################" +
@@ -164,20 +171,17 @@ namespace Enlashceoc.Game
         static void GameController()
         {
             Console.Clear(); //clean console from old UI
+            GenerateEmptyBoard();
+            ReplaceObject(4, 1, 'C');
             while (true)
             {
-                GenerateBoard(); //'space' gets overwritten each button click
-                                 //-> no need to manually remove old elements
-                //temporal fix to test 'Chest' object (&& spacebar handling)
-                char[] temp = space.ToCharArray();
-                temp[GetPos(4, 1)] = 'C';
-                space = new string(temp);
-
+                //GenerateBoard(); //'space' gets overwritten each button click
+                //                 //-> no need to manually remove old elements
                 switch (PlayerController())
                 {
                     case 2: //continue game
                         Console.Clear();
-                        space = "";
+                        //space = "";
                         break;
                     case 1: //player won
                         _ = new GameOver(score, true);

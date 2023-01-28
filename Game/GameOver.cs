@@ -19,7 +19,7 @@ namespace Enlashceoc.Game
             _ = new Menu();
         }
 
-        static void SaveScore(string playernName, int playerScore)
+        static void SaveScore(string playernName, long playtime)
         {
             string path = AppDomain.CurrentDomain.BaseDirectory + "gamedata";
             //write player name && score in file in local storage
@@ -29,16 +29,24 @@ namespace Enlashceoc.Game
                 if (!string.IsNullOrWhiteSpace(jsonString))
                 {
                     SaveData[] scoresData = JsonSerializer.Deserialize<SaveData[]>(jsonString)!;
-                    //deserialize json and write values into SaveData array
-                    for (int i = 0; i < scoresData.Length; i++)
+                    //deserialize json and write values into SaveData a                                                                                                                 rray
+                    for (int i = 0; i < 5; i++) // fixed scoreboard size: 5 elements
                     {
-                        if (playerScore > scoresData[i].Score)
+                        if (scoresData[i].Playtime > playtime || scoresData[i].Playtime == 0)
                         {
-                            for (int k = scoresData.Length - 1; k > i; k--)
+                            for (int k = 4; k > i; k--) //k = scoreboard size - 1
                             {
                                 scoresData[k] = scoresData[k - 1];
                             }
-                            scoresData[i] = new SaveData { Name = playernName, Score = playerScore };
+                            //EXPLANATION FOR THIS LOOP so I don't have to re-check everything again
+                            //"walk" by code blocks (example):
+                            //...
+                            //i=2, true, k=4, scoresData[4] = scoresData[3]
+                            //i=2, true, k=3, scoresData[3] = scoresData[2]
+                            //i=2, true, k > 2 false -> quit loop, serializing, saving, quitting outer loop
+                            //...
+                            //override current values with new ones (when playtime > saved playtime)
+                            scoresData[i] = new SaveData { Name = playernName, Playtime = playtime };
                             //write new data to file with override
                             string newJsonString = JsonSerializer.Serialize(scoresData);
                             File.WriteAllText(path, newJsonString);
@@ -53,11 +61,11 @@ namespace Enlashceoc.Game
                 //create "empty" scoreboard && write scoreboard data into file
                 List<SaveData> scoresData = new List<SaveData>();
                 //puts player on first place
-                scoresData.Add(new SaveData { Name = playernName, Score = playerScore });
+                scoresData.Add(new SaveData { Name = playernName, Playtime = playtime });
                 //and fills other slots with "empty - 0"
                 for (int i = 0; i < 4; i++)
                 {
-                    scoresData.Add(new SaveData { Name = "empty", Score = 0 });
+                    scoresData.Add(new SaveData { Name = "none", Playtime = 0 });
                 }
                 string jsonString = JsonSerializer.Serialize(scoresData);
                 using (StreamWriter wf = File.CreateText(path))
@@ -67,8 +75,10 @@ namespace Enlashceoc.Game
             }
         }
 
-        static private void GenerateGameOverUIHeader(int score, string titleText)
+        static private void GenerateGameOverUIHeader(long playtime, string titleText)
         {
+            TimeSpan t = TimeSpan.FromMilliseconds(playtime);
+            string timeStr = @$"{t.Hours:D2}:{t.Minutes:D2}:{t.Seconds:D2}:{t.Milliseconds:D3}";
             string borderLine =
                 "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" +
                 "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" +
@@ -79,12 +89,14 @@ namespace Enlashceoc.Game
                 titleText +
                 borderLine +
                 "\n\n\n";
-            Console.WriteLine(title);
-            Console.WriteLine("\t\t\t\t\t\t     " +
-                              "SCORE\n\n" +
-                              "\t\t\t\t\t\t     " +
-                              score +
-                              "\n\n");
+            Console.WriteLine($"{title}\n" +
+                              $"\t\t\t\t\t\t    " +
+                              $"  " +
+                              $"TIME\n\n" +
+                              $"\t\t\t\t\t\t" +
+                              $"  " +
+                              $"{timeStr}" +
+                              $"\n\n");
         }
 
         static private char ProcessUserInput()
@@ -105,9 +117,9 @@ namespace Enlashceoc.Game
             if (isNameReq)
             {
                 //capture and return a name
-                Console.WriteLine("\t\t\t\t\t\t" +
-                                  "ENTER YOUR NAME:\n");
-                Console.Write("\t\t\t\t\t\t");
+                Console.Write("\t\t\t\t\t\t" +
+                              "ENTER YOUR NAME:\n\n" +
+                              "\t\t\t\t\t\t");
                 for (int i = 0; i < 5; i++) //name size: 5
                     playerName += ProcessUserInput();
                 //override playername if eq "_____" (empty)
@@ -118,7 +130,7 @@ namespace Enlashceoc.Game
             return playerName;
         }
 
-        static void GameOverSubcontroller(int score, List<string> menuActions, string titleText, bool type)
+        static void GameOverSubcontroller(long playtime, List<string> menuActions, string titleText, bool playerWin)
         {
             Console.Clear();
             int selection = 0;
@@ -127,10 +139,10 @@ namespace Enlashceoc.Game
             while (true)
             {
                 //create 'you win!' or 'game over' headers/titles
-                GenerateGameOverUIHeader(score, titleText);
+                GenerateGameOverUIHeader(playtime, titleText);
                 //ask for player name if player won && name is empty 
                 //also: *in any case* print menu actions
-                if (type && string.IsNullOrWhiteSpace(playerName))
+                if (playerWin && string.IsNullOrWhiteSpace(playerName))
                     playerName = GenerateGameOverUIBody(menuActions[selection], true)!;
                 else
                     GenerateGameOverUIBody(menuActions[selection], false);
@@ -157,8 +169,8 @@ namespace Enlashceoc.Game
                 }
                 if (loopComplete)
                 {
-                    if (type) //save score only if player wins
-                        SaveScore(playerName, score);
+                    if (playerWin) //save score only if player wins
+                        SaveScore(playerName, playtime);
                     switch (selection)
                     {
                         case 0:
@@ -178,7 +190,7 @@ namespace Enlashceoc.Game
             }
         }
 
-        static void GameOverController(int score, bool type)
+        static void GameOverController(long playtime, bool playerWin)
         {
             List<string> menuActions = new List<string>
             {
@@ -204,9 +216,9 @@ namespace Enlashceoc.Game
                 "\t\t\t\t\t\t   " +
                 "> MENU\n\n"
             };
-            if (type)
+            if (playerWin)
                 GameOverSubcontroller(
-                    score,
+                    playtime,
                     menuActions,
                     "\t\t\t\t__     ______  _    _  __          _______ _   _ _ \n" +
                     "\t\t\t\t\\ \\   / / __ \\| |  | | \\ \\        / /_   _| \\ | | |\n" +
@@ -214,10 +226,10 @@ namespace Enlashceoc.Game
                     "\t\t\t\t  \\   /| |  | | |  | |   \\ \\/  \\/ /   | | | . ` | |\n" +
                     "\t\t\t\t   | | | |__| | |__| |    \\  /\\  /   _| |_| |\\  |_|\n" +
                     "\t\t\t\t   |_|  \\____/ \\____/      \\/  \\/   |_____|_| \\_(_)\n\n",
-                    type);
+                    playerWin);
             else
                 GameOverSubcontroller(
-                    score,
+                    playtime,
                     menuActions,
                     "\t\t\t\t  _____          __  __ ______    ______      ________ _____  \n" +
                     "\t\t\t\t / ____|   /\\   |  \\/  |  ____|  / __ \\ \\    / /  ____|  __ \\ \n" +
@@ -225,12 +237,12 @@ namespace Enlashceoc.Game
                     "\t\t\t\t| | |_ | / /\\ \\ | |\\/| |  __|   | |  | |\\ \\/ / |  __| |  _  / \n" +
                     "\t\t\t\t| |__| |/ ____ \\| |  | | |____  | |__| | \\  /  | |____| | \\ \\ \n" +
                     "\t\t\t\t \\_____/_/    \\_\\_|  |_|______|  \\____/   \\/   |______|_|  \\_\\\n\n",
-                    type);
+                    playerWin);
         }
 
-        public GameOver(int score, bool type)
+        public GameOver(long playtime, bool playerWin)
         {
-            GameOverController(score, type);
+            GameOverController(playtime, playerWin);
         }
     }
 }

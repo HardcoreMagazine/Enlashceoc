@@ -1,7 +1,5 @@
 ﻿using System.Text.Json;
 
-//#pragma warning disable CS8600 //converting null literal or possible null value to non-nullable type.
-//#pragma warning disable CS8602 //dereference of a possibly null reference.
 namespace Enlashceoc
 {
     internal class Scoreboard
@@ -18,23 +16,25 @@ namespace Enlashceoc
                 {
                     SaveData[] scoresData = JsonSerializer.Deserialize<SaveData[]>(jsonString)!;
                     //deserialize json and write values into SaveData array
-                    for (int i = 0; i < scoresData.Length; i++)
+                    for (int i = 0; i < 5; i++) //fixed scoreboard size: 5 elements
                     {
+                        //convert unix timestamp into formatted string
+                        TimeSpan t = TimeSpan.FromMilliseconds(scoresData[i].Playtime);
+                        string timeStr = @$"{t.Hours:D2}:{t.Minutes:D2}:{t.Seconds:D2}:{t.Milliseconds:D3}";
                         //save recieved values in memory
-                        scores.Add(i + 1 + ". " + scoresData[i].Name + " - " + scoresData[i].Score);
+                        scores.Add($"{i + 1}. {scoresData[i].Name} - {timeStr}");
                     }
                 }
-
             }
             else
             {
-                //create "empty" scoreboard
+                //create "empty" scoreboard with 5 positions
                 //and write it into file
                 List<SaveData> scoresData = new List<SaveData>();
                 for (int i = 0; i < 5; i++)
                 {
-                    scoresData.Add(new SaveData { Name = "empty", Score = 0 });
-                    scores.Add(i + 1 + ". " + scoresData[i].Name + " - " + scoresData[i].Score);
+                    scoresData.Add(new SaveData { Name = "none", Playtime = 0 });
+                    scores.Add($"{i + 1}. {scoresData[i].Name} - 00:00:00:000");
                 }
                 string jsonString = JsonSerializer.Serialize(scoresData);
                 File.WriteAllText(path, jsonString);
@@ -57,12 +57,12 @@ namespace Enlashceoc
             //-----------------------------------------------//
             Console.WriteLine(title);
             for (int i = 0; i < scores.Count; i++) 
-                Console.WriteLine("\t\t\t\t\t" + scores[i] + "\n");
-            Console.WriteLine("\n\n" +
-                              "\t\t\t\t\t\t\t" +
-                              "> RETURN" +
-                              "\n\n\n");
-            Console.Write(borderLine.Remove(119));
+                Console.WriteLine("\t\t\t\t\t\t" + scores[i] + "\n");
+            Console.Write($"\n\n" +
+                          $"\t\t\t\t\t\t\t" +
+                          $"> RETURN" +
+                          $"\n\n\n" +
+                          $"{borderLine.Remove(119)}");
             //see explanation in 'Menu.cs'
         }
 

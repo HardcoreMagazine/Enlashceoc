@@ -72,10 +72,12 @@ namespace Enlashceoc
                         loopComplete = true;
                         break;
                     case ConsoleKey.UpArrow:
-                        if (selection - 1 < 0) //using '--' or
-                                               //'++' will result in
-                                               //'array index out
-                                               //of bounds' exception
+                        if (selection - 1 < 0)
+                            //using '--' or
+                            //'++' will result in
+                            //'array index out
+                            //of bounds' exception
+                            //(in both cases: prefix and postfix!)
                             selection = 2;
                         else
                             selection--;
@@ -128,21 +130,20 @@ namespace Enlashceoc
                 borderLine +
                 "\n\n\n";
             //-----------------------------------------------//
-            Console.WriteLine(gameTitle);
-            Console.WriteLine(menuActions);
-            
-            Console.Write("\n\n\n\n\n\n\n" +
-                          "version: 0.1 - " +
-                          "https://github.com/HardcoreMagazine/Enlashceoc\n" +
-                          borderLine.Remove(119));
-                          //explanation:
-                          //default window size is 120 characters;
-                          //on Windows systems last line character
-                          //is always "_" (user input)
-                          //if we use default 120-char line
-                          //"_" symbol will be placed on
-                          //next (new) line, which will
-                          //result in format loss
+            Console.Write($"{gameTitle}\n" +
+                          $"{menuActions}\n" +
+                          $"\n\n\n\n\n\n\n" +
+                          $"version: 0.2 - " +
+                          $"https://github.com/HardcoreMagazine/Enlashceoc\n" +
+                          $"{borderLine.Remove(119)}");
+            //'Remove(119)' explanation:
+            //default window size is 120 characters;
+            //on Windows systems last line character
+            //is always "_" (user input)
+            //if we use default 120-char line
+            //"_" symbol will be placed on
+            //next (new) line, which will
+            //result in partial UI loss
         }
 
         // Self-initialization

@@ -8,7 +8,7 @@
             Console.Title = "Enlashceoc";
             Console.TreatControlCAsInput = false;
             //call main menu
-            Menu menu = new Menu();
+            _ = new Menu();
         }
     }
 }

@@ -2,14 +2,13 @@
 {
     internal class NewGame
     {
-        private static char heading = ' ';
         private static int X = 1, Y = 1; //player position
         //X - character number in row (allowed values: 1..118; total: 0..119)
         //Y - row number (allowed values: 1..28; total: 0..29)
-        private static int score = 0;
-        private static bool playerHasKey = false; //key is required to escape
-        static int h = Console.WindowHeight; //default: 30
-        static int w = Console.WindowWidth; //default: 120
+        private static long timer1 = 0;
+        //used for playtime calculation on game end
+        static readonly int h = Console.WindowHeight; //default: 30
+        static readonly int w = Console.WindowWidth; //default: 120
         private static string space = "";
 
         // Reset board && player position to default values
@@ -18,14 +17,13 @@
             X = 1; //default player X pos
             Y = 1; //default player Y pos
             space = "";
-            playerHasKey = false;
         }
 
         // Replace single object on board by X, Y coordinates
         static void ReplaceObject(int Xpos, int Ypos, char replacement)
         {
             // Note: does not work directly ('space[index] = replacement;')
-            // see error code 'CS0200'
+            // see: MS docs page error code 'CS0200'
             char[] temp = space.ToCharArray();
             temp[GetPos(Xpos, Ypos)] = replacement;
             space = new string(temp);
@@ -65,57 +63,35 @@
         // Check if path is blocked by an obstacle
         // Possible obstacles:
         // wall - #;
-        // chest - C;
-        // key - K;
-        // locked door - L.
+        // exit - E.
         static bool IsObstacle(int Xpos, int Ypos)
         {
             char cell = space[GetPos(Xpos, Ypos)];
-            if (cell == '#' || cell == 'C' ||
-                cell == 'K' || cell == 'L') //return true if obstacle found
+            if (cell == '#' || cell == 'E') //return true if obstacle found
                 return true;
             else
                 return false;
         }
 
         // Use object in front on player [handler]
-        static void ActionUseObject()
+        static bool ActionUseObject()
         {
-            int Xpos = X, Ypos = Y;
-            switch (heading)
+            //check 4 cells around player (up, down, right, left)
+            char[] cellsAround =
             {
-                case 'u':
-                    Ypos -= 1;
-                    break;
-                case 'd':
-                    Ypos += 1;
-                    break;
-                case 'l':
-                    Xpos -= 1;
-                    break;
-                case 'r':
-                    Xpos += 1;
-                    break;
-                default:
-                    return; //quit function if 'heading' is yet empty
-            }
-            char nextCell = space[GetPos(Xpos, Ypos)];
-            switch (nextCell)
+                space[GetPos(X, Y-1)],
+                space[GetPos(X, Y+1)],
+                space[GetPos(X+1, Y)],
+                space[GetPos(X-1, Y)]
+            };
+            for (int i = 0; i < cellsAround.Length; i++)
             {
-                case 'C':
-                    score += 1000; //apply effect
-                    ReplaceObject(Xpos, Ypos, ' '); //dispose object
-                    break;
-                case 'K':
-                    playerHasKey = true;
-                    break;
-                case 'L':
-                    if (playerHasKey)
-                        ReplaceObject(Xpos, Ypos, ' ');
-                    break;
-                default:
-                    return;
+                if (cellsAround[i] == 'E')
+                {
+                    return true;
+                }
             }
+            return false;
         }
 
         // Adds player on board, processes player input
@@ -123,13 +99,13 @@
         // for object placement!
         static byte PlayerController()
         {
-            byte actionResult = 2; //possible values: 2, 1, 0 - continue, win, quit/loss
+            byte actionResult = 2; //values: 2 - continue, 1 - win - quit/loss
             char player = '@';
 
             ReplaceObject(X, Y, player);
             
-            // Print board
-            Console.Write(space); //will be removed in future -- because map isnt yet generated
+            //* Render playboard
+            Console.Write(space);
 
             // Player actions handling
             ConsoleKey input = Console.ReadKey(true).Key;
@@ -139,7 +115,6 @@
                     if (!IsObstacle(X, Y - 1))
                     {
                         ReplaceObject(X, Y, ' '); //remove old player obj from board
-                        heading = 'u';
                         Y -= 1;
                     }
                     break;
@@ -147,7 +122,6 @@
                     if (!IsObstacle(X, Y + 1))
                     {
                         ReplaceObject(X, Y, ' ');
-                        heading = 'd';
                         Y += 1;
                     }
                     break;
@@ -155,7 +129,6 @@
                     if (!IsObstacle(X - 1, Y))
                     {
                         ReplaceObject(X, Y, ' '); 
-                        heading = 'l';
                         X -= 1;
                     }
                     break;
@@ -163,16 +136,19 @@
                     if (!IsObstacle(X + 1, Y))
                     {
                         ReplaceObject(X, Y, ' ');
-                        heading = 'r';
                         X += 1;
                     }
                     break;
                 case ConsoleKey.Spacebar: //use item
-                    ActionUseObject();
+                    if (ActionUseObject())
+                    {
+                        actionResult = 1;
+                    }
+                    //ResetGame();
                     break;
                 case ConsoleKey.Escape: //quit game
                     actionResult = 0;
-                    ResetGame();
+                    //ResetGame();
                     break;
                 default:
                     break;
@@ -205,6 +181,12 @@
         // Override 'space' variable, creating playable level
         static void GenerateLevel()
         {
+            // Reset board before use
+            // *is required because of bug occuring on new game
+            // after player's win that causes console to print out
+            // pile of random garbage
+            ResetGame();
+
             // Create level borders
             GenerateEmptyBoard();
 
@@ -215,32 +197,31 @@
             {
                 possibleExits.Add(k + 1); //238+1, ...., 3479+1
             }
+            //randomly place maze Exit on right wall
             int randomIndex = RNG(possibleExits.Count - 1);
-            ReplaceObject(possibleExits[randomIndex], 'L');
+            ReplaceObject(possibleExits[randomIndex], 'E');
+            //TODO
+            //TODO
         }
 
         static void GameController()
         {
             Console.Clear(); //clean console from old UI
-            GenerateLevel();
-            ReplaceObject(4, 1, 'C'); //chest sample -- only for testing
+            GenerateLevel();            
+            timer1 = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
             while (true)
             {
-                //GenerateBoard(); //'space' gets overwritten each button click
-                //                 //-> no need to manually remove old elements
+                var timer2 = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
                 switch (PlayerController())
                 {
                     case 2: //continue game
                         Console.Clear();
-                        //space = "";
                         break;
                     case 1: //player won
-                        _ = new GameOver(score, true);
-                        score = 0; //dont remove this or game will break
+                        _ = new GameOver(timer2 - timer1, true);
                         break;
                     default: //player loss/quit (also covers 'case 0')
-                        _ = new GameOver(score, false);
-                        score = 0; //dont remove this or game will break
+                        _ = new GameOver(timer2 - timer1, false);
                         break;
                 }
             }

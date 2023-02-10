@@ -4,19 +4,31 @@ namespace Enlashceoc.Game
 {
     internal class GameOver
     {
-        static void ActionRetry()
+        private static void ActionRetry()
         {
             _ = new NewGame();
         }
 
-        static void ActionScoreboard()
+        private static void ActionScoreboard()
         {
             _ = new Scoreboard();
         }
 
-        static void ActionMenu()
+        private static void ActionMenu()
         {
             _ = new Menu();
+        }
+
+        private static string EncodeString(string str)
+        {
+            byte[] bytes = System.Text.Encoding.UTF8.GetBytes(str);
+            return Convert.ToBase64String(bytes);
+        }
+
+        private static string DecodeString(string str)
+        {
+            byte[] bytes = Convert.FromBase64String(str);
+            return System.Text.Encoding.UTF8.GetString(bytes);
         }
 
         static void SaveScore(string playernName, long playtime)
@@ -25,11 +37,12 @@ namespace Enlashceoc.Game
             //write player name && score in file in local storage
             if (File.Exists(path)) //check if file exists
             {
-                string jsonString = File.ReadAllText(path); //read json from file
-                if (!string.IsNullOrWhiteSpace(jsonString))
+                string encodedJsonString = File.ReadAllText(path); //read json from file
+                if (!string.IsNullOrWhiteSpace(encodedJsonString))
                 {
-                    SaveData[] scoresData = JsonSerializer.Deserialize<SaveData[]>(jsonString)!;
-                    //deserialize json and write values into SaveData a                                                                                                                 rray
+                    string decodedStr = DecodeString(encodedJsonString);
+                    SaveData[] scoresData = JsonSerializer.Deserialize<SaveData[]>(decodedStr)!;
+                    //deserialize json and write values into SaveData array
                     for (int i = 0; i < 5; i++) // fixed scoreboard size: 5 elements
                     {
                         if (scoresData[i].Playtime > playtime || scoresData[i].Playtime == 0)
@@ -49,7 +62,7 @@ namespace Enlashceoc.Game
                             scoresData[i] = new SaveData { Name = playernName, Playtime = playtime };
                             //write new data to file with override
                             string newJsonString = JsonSerializer.Serialize(scoresData);
-                            File.WriteAllText(path, newJsonString);
+                            File.WriteAllText(path, EncodeString(newJsonString));
                             //and break the loop
                             break;
                         }
@@ -68,14 +81,11 @@ namespace Enlashceoc.Game
                     scoresData.Add(new SaveData { Name = "none", Playtime = 0 });
                 }
                 string jsonString = JsonSerializer.Serialize(scoresData);
-                using (StreamWriter wf = File.CreateText(path))
-                {
-                    wf.WriteLine(jsonString);
-                }
+                File.WriteAllText(path, EncodeString(jsonString));
             }
         }
 
-        static private void GenerateGameOverUIHeader(long playtime, string titleText)
+        private static void GenerateGameOverUIHeader(long playtime, string titleText)
         {
             TimeSpan t = TimeSpan.FromMilliseconds(playtime);
             string timeStr = @$"{t.Hours:D2}:{t.Minutes:D2}:{t.Seconds:D2}:{t.Milliseconds:D3}";
@@ -142,7 +152,7 @@ namespace Enlashceoc.Game
                 GenerateGameOverUIHeader(playtime, titleText);
                 //ask for player name if player won && name is empty 
                 //also: *in any case* print menu actions
-                if (playerWin && string.IsNullOrWhiteSpace(playerName))
+                if (playerWin & string.IsNullOrWhiteSpace(playerName))
                     playerName = GenerateGameOverUIBody(menuActions[selection], true)!;
                 else
                     GenerateGameOverUIBody(menuActions[selection], false);

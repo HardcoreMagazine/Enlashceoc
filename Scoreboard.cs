@@ -4,6 +4,18 @@ namespace Enlashceoc
 {
     internal class Scoreboard
     {
+        private static string EncodeString(string str)
+        {
+            byte[] bytes = System.Text.Encoding.UTF8.GetBytes(str);
+            return Convert.ToBase64String(bytes);
+        }
+
+        private static string DecodeString(string str)
+        {
+            byte[] bytes = Convert.FromBase64String(str);
+            return System.Text.Encoding.UTF8.GetString(bytes);
+        }
+
         static private void GenerateScoreboardUI()
         {
             List<string> scores = new List<string>();
@@ -11,10 +23,11 @@ namespace Enlashceoc
             string path = AppDomain.CurrentDomain.BaseDirectory + "gamedata";
             if (File.Exists(path)) //check if file exists
             {
-                string jsonString = File.ReadAllText(path); //read json from file
-                if (!String.IsNullOrWhiteSpace(jsonString))
+                string encodedJsonString = File.ReadAllText(path); //read json from file
+                if (!String.IsNullOrWhiteSpace(encodedJsonString))
                 {
-                    SaveData[] scoresData = JsonSerializer.Deserialize<SaveData[]>(jsonString)!;
+                    string decodedStr = DecodeString(encodedJsonString);
+                    SaveData[] scoresData = JsonSerializer.Deserialize<SaveData[]>(decodedStr)!;
                     //deserialize json and write values into SaveData array
                     for (int i = 0; i < 5; i++) //fixed scoreboard size: 5 elements
                     {
@@ -37,7 +50,7 @@ namespace Enlashceoc
                     scores.Add($"{i + 1}. {scoresData[i].Name} - 00:00:00:000");
                 }
                 string jsonString = JsonSerializer.Serialize(scoresData);
-                File.WriteAllText(path, jsonString);
+                File.WriteAllText(path, EncodeString(jsonString));
             }
             string borderLine =
                 "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" +

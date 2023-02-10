@@ -58,7 +58,7 @@
         private static bool IsLegalMovement(int Xpos, int Ypos)
         {
             // 0 <= X <= 119 & 1 <= Y <= 27
-            if ((Xpos < w & Xpos >= 0) & (Ypos < h - 2 & Ypos >= 1))
+            if ((Xpos < w & Xpos >= 0) & (Ypos <= h - 2 & Ypos >= 1))
             {
                 // Check for obstacles
                 char cell = space[GetPos(Xpos, Ypos)];
@@ -95,6 +95,8 @@
         {
             byte actionResult = 2;
             // values: 3 - reset game, 2 - continue, 1 - win, 0 - quit
+
+            //if (!space.Contains('c')) space[GetPos(X, Y)] = '@';
 
             //* Render playboard
             Console.Write(space);
@@ -161,7 +163,7 @@
             // Set player position:
             int[] revIndex = ReversePos(lg.playerIndex);
             X = revIndex[0];
-            Y = revIndex[1];
+            Y = revIndex[1] + 1;
         }
 
         private static void GameController()

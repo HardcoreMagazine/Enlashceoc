@@ -2,79 +2,77 @@
 {
     internal class NewGame
     {
-        private static int X = 1, Y = 1; //player position
-        //X - character number in row (allowed values: 1..118; total: 0..119)
-        //Y - row number (allowed values: 1..28; total: 0..29)
-        private static long timer1 = 0;
-        //used for playtime calculation on game end
-        static readonly int h = Console.WindowHeight; //default: 30
-        static readonly int w = Console.WindowWidth; //default: 120
-        private static string space = "";
+        private static int X, Y; // Player position
+        // X - character number in row (0..119)
+        // Y - row number (0..29)
+        private static long T1;
+        // Used for playtime calculation on game end
+        private static readonly int h = Console.WindowHeight; // Default: 30
+        private static readonly int w = Console.WindowWidth; // Default: 120
+        private static char[] space = new char[h * w - 1];
+
 
         // Reset board && player position to default values
-        static void ResetGame()
+        private static void ResetGame()
         {
-            X = 1; //default player X pos
-            Y = 1; //default player Y pos
-            space = "";
+            Console.Clear();
+            GenerateLevel();
+            T1 = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
         }
 
-        // Replace single object on board by X, Y coordinates
-        static void ReplaceObject(int Xpos, int Ypos, char replacement)
+        private static int GetPos(int X, int Y)
         {
-            // Note: does not work directly ('space[index] = replacement;')
-            // see: MS docs page error code 'CS0200'
-            char[] temp = space.ToCharArray();
-            temp[GetPos(Xpos, Ypos)] = replacement;
-            space = new string(temp);
+            if (X == w & Y == h - 2) // last element
+                return w * h - 1;
+            else
+                return Y * w + X;
         }
 
-        // Replace single object on board by index
-        static void ReplaceObject(int index, char replacement)
+        private static int[] ReversePos(int index)
         {
-            char[] temp = space.ToCharArray();
-            temp[index] = replacement;
-            space = new string(temp);
-        }
-
-        // Convert X, Y coordinates into array index
-        static int GetPos(int Xpos, int Ypos)
-        {
-            return Ypos * w + Xpos ;
-            // 'space' (board) string is basically array of characters.
-            // By default, 'space' size is 3599 characters;
-            // for ease of access to player position
-            // it's INDEX represnted by X, Y values (2D-axis).
-            // In order to retrieve object position (CELL) in 'space'
-            // we need to find characters ROW (range): Y * window_width
-            // && add to this number COLUMN number: + X
+            int posX = index % w;
+            int posY = (index - posX) / w;
+            return new int[] { posX, posY };
         }
 
         // Generate pseudo-random number
-        static int RNG(int? maxValue = null)
+        private static int RNG(int? minValue = null, int? maxValue = null)
         {
             Random num = new Random(Guid.NewGuid().GetHashCode());
-            if (maxValue == null)
-                return num.Next(int.MaxValue);
+            if (minValue == null)
+                if (maxValue == null)
+                    return num.Next(0, int.MaxValue);
+                else
+                    return num.Next(0, (int)maxValue);
             else
-                return num.Next((int)maxValue);
+                if (maxValue == null)
+                return num.Next((int)minValue, int.MaxValue);
+            else
+                return num.Next((int)minValue, (int)maxValue);
         }
 
-        // Check if path is blocked by an obstacle
-        // Possible obstacles:
-        // wall - #;
-        // exit - E.
-        static bool IsObstacle(int Xpos, int Ypos)
+        // Check if movement is legal and path is not blocked by an obstacle
+        // Obstacles:
+        // wall - '#' or '■';
+        // exit - 'E'.
+        private static bool IsLegalMovement(int Xpos, int Ypos)
         {
-            char cell = space[GetPos(Xpos, Ypos)];
-            if (cell == '#' || cell == 'E') //return true if obstacle found
-                return true;
+            // 0 <= X <= 119 & 1 <= Y <= 27
+            if ((Xpos < w & Xpos >= 0) & (Ypos < h - 2 & Ypos >= 1))
+            {
+                // Check for obstacles
+                char cell = space[GetPos(Xpos, Ypos)];
+                if (cell != '■' & cell != 'E')
+                    return true;
+                else
+                    return false;
+            }
             else
                 return false;
         }
 
         // Use object in front on player [handler]
-        static bool ActionUseObject()
+        private static bool ActionUseObject()
         {
             //check 4 cells around player (up, down, right, left)
             char[] cellsAround =
@@ -85,70 +83,66 @@
                 space[GetPos(X-1, Y)]
             };
             for (int i = 0; i < cellsAround.Length; i++)
-            {
                 if (cellsAround[i] == 'E')
-                {
                     return true;
-                }
-            }
             return false;
         }
 
         // Adds player on board, processes player input
         // Note: player is constantly moving, do not use this function
         // for object placement!
-        static byte PlayerController()
+        private static byte PlayerController()
         {
-            byte actionResult = 2; //values: 2 - continue, 1 - win - quit/loss
-            char player = '@';
+            byte actionResult = 2;
+            // values: 3 - reset game, 2 - continue, 1 - win, 0 - quit
 
-            ReplaceObject(X, Y, player);
-            
             //* Render playboard
             Console.Write(space);
 
             // Player actions handling
-            ConsoleKey input = Console.ReadKey(true).Key;
-            switch (input)
+            switch (Console.ReadKey(true).Key)
             {
                 case ConsoleKey.UpArrow: //move up
-                    if (!IsObstacle(X, Y - 1))
+                    if (IsLegalMovement(X, Y - 1))
                     {
-                        ReplaceObject(X, Y, ' '); //remove old player obj from board
+                        space[GetPos(X, Y)] = ' '; //remove old player obj from board
                         Y -= 1;
+                        space[GetPos(X, Y)] = '@';
                     }
                     break;
                 case ConsoleKey.DownArrow: //move down
-                    if (!IsObstacle(X, Y + 1))
+                    if (IsLegalMovement(X, Y + 1))
                     {
-                        ReplaceObject(X, Y, ' ');
+                        space[GetPos(X, Y)] = ' ';
                         Y += 1;
+                        space[GetPos(X, Y)] = '@';
                     }
                     break;
                 case ConsoleKey.LeftArrow: //move left
-                    if (!IsObstacle(X - 1, Y))
+                    if (IsLegalMovement(X - 1, Y))
                     {
-                        ReplaceObject(X, Y, ' '); 
+                        space[GetPos(X, Y)] = ' ';
                         X -= 1;
+                        space[GetPos(X, Y)] = '@';
                     }
                     break;
                 case ConsoleKey.RightArrow: //move right
-                    if (!IsObstacle(X + 1, Y))
+                    if (IsLegalMovement(X + 1, Y))
                     {
-                        ReplaceObject(X, Y, ' ');
+                        space[GetPos(X, Y)] = ' ';
                         X += 1;
+                        space[GetPos(X, Y)] = '@';
                     }
                     break;
                 case ConsoleKey.Spacebar: //use item
                     if (ActionUseObject())
-                    {
                         actionResult = 1;
-                    }
-                    //ResetGame();
+                    break;
+                case ConsoleKey.R: //restart game & create new level
+                    actionResult = 3;
                     break;
                 case ConsoleKey.Escape: //quit game
                     actionResult = 0;
-                    //ResetGame();
                     break;
                 default:
                     break;
@@ -156,72 +150,41 @@
             return actionResult;
         }
 
-        // Overrides 'space' variable, creating empty board with walls
-        static void GenerateEmptyBoard()
-        {
-            string horizontalWall = "##############################" +
-                                    "##############################" +
-                                    "##############################" +
-                                    "##############################";
-            //create field inside walls with no objects
-            space += horizontalWall;
-            for (int i = 1; i < h-2; i++) //Y axis (row)
-            {
-                for (int j = 0; j < w; j++) //X axis (column)
-                {
-                    if (j % 119 == 0)
-                        space += "#"; //vertical wall
-                    else
-                        space += " "; //space
-                }
-            }
-            space += horizontalWall.Remove(119);
-        }
-
         // Override 'space' variable, creating playable level
-        static void GenerateLevel()
+        private static void GenerateLevel()
         {
-            // Reset board before use
-            // *is required because of bug occuring on new game
-            // after player's win that causes console to print out
-            // pile of random garbage
-            ResetGame();
-
-            // Create level borders
-            GenerateEmptyBoard();
-
-            // Create player exit (locked door)
-            // Stepping into that cell will result in player win
-            List<int> possibleExits = new List<int>();
-            for (int k = (w - 1) *  2; k < w * h - 2 * w; k += w) //default: w*h = 3600
-            {
-                possibleExits.Add(k + 1); //238+1, ...., 3479+1
-            }
-            //randomly place maze Exit on right wall
-            int randomIndex = RNG(possibleExits.Count - 1);
-            ReplaceObject(possibleExits[randomIndex], 'E');
-            //TODO
-            //TODO
+            LevelGenerator lg = new LevelGenerator();
+            // Unify border walls and maze field:
+            for (int i = 0; i < w; i++) space[i] = '#';
+            for (int i = 0; i < lg.space.Length; i++) space[i + w] = lg.space[i];
+            for (int i = w + lg.space.Length; i < space.Length; i++) space[i] = '#';
+            // Set player position:
+            int[] revIndex = ReversePos(lg.playerIndex);
+            X = revIndex[0];
+            Y = revIndex[1];
         }
 
-        static void GameController()
+        private static void GameController()
         {
             Console.Clear(); //clean console from old UI
             GenerateLevel();            
-            timer1 = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
+            T1 = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
             while (true)
             {
-                var timer2 = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
+                var T2 = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
                 switch (PlayerController())
                 {
+                    case 3: //reset game
+                        ResetGame();
+                        break;
                     case 2: //continue game
                         Console.Clear();
                         break;
                     case 1: //player won
-                        _ = new GameOver(timer2 - timer1, true);
+                        _ = new GameOver(T2 - T1, true);
                         break;
                     default: //player loss/quit (also covers 'case 0')
-                        _ = new GameOver(timer2 - timer1, false);
+                        _ = new GameOver(T2 - T1, false);
                         break;
                 }
             }

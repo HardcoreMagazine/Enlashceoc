@@ -133,7 +133,7 @@ namespace Enlashceoc
             Console.Write($"{gameTitle}\n" +
                           $"{menuActions}\n" +
                           $"\n\n\n\n\n\n\n" +
-                          $"version: 0.2 - " +
+                          $"version: 0.9 - " +
                           $"https://github.com/HardcoreMagazine/Enlashceoc\n" +
                           $"{borderLine.Remove(119)}");
             //'Remove(119)' explanation:

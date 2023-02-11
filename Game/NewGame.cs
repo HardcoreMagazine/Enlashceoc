@@ -166,9 +166,48 @@
             Y = revIndex[1] + 1;
         }
 
-        private static void GameController()
+        private static void DisplayGameControls()
         {
             Console.Clear(); //clean console from old UI
+            string borderLine = new string(Enumerable.Repeat('@', w * 2).ToArray());
+            string info = "\n\n\n\n" +
+                          "\t\t\t     Player represented by '@' symbol, maze exit with 'E' symbol\n\n" +
+                          "\t\t\t  Move player pawn to exit and press interaction key to win the game\n\n\n";
+            string controls = "\t\t\t\t\t\t  <CONTROLS>\n\n" +
+                              "\t\t\t\t\t       RESTART GAME - R\n\n" +
+                              "\t\t\t\t\t     INTERACT - Spacebar\n\n" +
+                              "\t\t\t\t\t       EXIT GAME - Esc\n\n" +
+                              "\t\t\t\t\tPLAYER MOVEMENT - Arrow keys\n\n\n" +
+                              "\t\t\t\tPress INTERACT key to continue or EXIT key to quit" +
+                              "\n\n\n";
+            string disclamer = "DISCLAMER: Enlashceoc is a 0 FPS game, meaning screen will update each time key is pressed. " +
+                               "Clicking keys too often will" +
+                               "cause screen to blink real fast " +
+                               "and may result in seizures for people with photosensitive epilepsy. " +
+                               "Player discretion is" +
+                               "advised.\n";
+            Console.Write(borderLine + info + controls);
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.Write(disclamer);
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.Write(borderLine.Remove(w * 2 - 1));
+            while (true)
+            {
+                switch (Console.ReadKey().Key)
+                {
+                    case ConsoleKey.Spacebar:
+                        Console.Clear();
+                        return;
+                    case ConsoleKey.Escape:
+                        Environment.Exit(0);
+                        break;
+                }
+            }
+        }
+
+        private static void GameController()
+        {
+            DisplayGameControls();
             GenerateLevel();            
             T1 = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
             while (true)

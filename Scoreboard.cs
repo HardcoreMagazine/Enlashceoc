@@ -67,7 +67,6 @@ namespace Enlashceoc
                 "\t\t\t|_____/ \\_____\\____/|_|  \\_\\______|____/ \\____/_/    \\_\\_|  \\_\\_____/ \n\n" +
                 borderLine +
                 "\n\n";
-            //-----------------------------------------------//
             Console.WriteLine(title);
             for (int i = 0; i < scores.Count; i++) 
                 Console.WriteLine("\t\t\t\t\t\t" + scores[i] + "\n");
@@ -76,12 +75,12 @@ namespace Enlashceoc
                           $"> RETURN" +
                           $"\n\n\n" +
                           $"{borderLine.Remove(119)}");
-            //see explanation in 'Menu.cs'
+            // See explanation in 'Menu.cs'
         }
 
         static void ScoreboardController()
         {
-            Console.Clear(); //remove traces of previous UI
+            Console.Clear(); // Remove traces of previous UI
             while (true)
             {
                 GenerateScoreboardUI();

@@ -1,5 +1,11 @@
 ﻿namespace Enlashceoc.Game
 {
+    /// <summary>
+    /// Generates text maze level 120 * 28 using home-made 
+    /// Kruskals-based algorythm. Note: may generate faulty levels,
+    /// supply together with "recreate level" function.
+    /// </summary>
+    // by "faulty levels" I mean dead ends on player start and/or exit, not "multiple ways out"
     internal class LevelGenerator
     {
         public char[] space;
@@ -23,7 +29,7 @@
         /// </summary>
         /// <param name="minValue">(optional) minimal value to generate</param>
         /// <param name="maxValue">(optional) maximum value to generate</param>
-        /// <returns></returns>
+        /// <returns>Pseudo-random int value</returns>
         static int RNG(int? minValue = null, int? maxValue = null)
         {
             Random num = new Random(Guid.NewGuid().GetHashCode());

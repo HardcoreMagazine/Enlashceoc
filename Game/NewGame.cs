@@ -2,17 +2,18 @@
 {
     internal class NewGame
     {
-        private static int X, Y; // Player position
+        private static int X, Y; // Player position:
         // X - character number in row (0..119)
         // Y - row number (0..29)
         private static long T1;
         // Used for playtime calculation on game end
         private static readonly int h = Console.WindowHeight; // Default: 30
         private static readonly int w = Console.WindowWidth; // Default: 120
-        private static char[] space = new char[h * w - 1];
+        private static char[] space = new char[h * w - 1]; 
+        // Last character stays unfilled - used to intercept console key
 
 
-        // Reset board && player position to default values
+        // Reset board & player position to default values
         private static void ResetGame()
         {
             Console.Clear();
@@ -95,8 +96,6 @@
         {
             byte actionResult = 2;
             // values: 3 - reset game, 2 - continue, 1 - win, 0 - quit
-
-            //if (!space.Contains('c')) space[GetPos(X, Y)] = '@';
 
             //* Render playboard
             Console.Write(space);
@@ -193,13 +192,15 @@
             Console.Write(borderLine.Remove(w * 2 - 1));
             while (true)
             {
-                switch (Console.ReadKey().Key)
+                switch (Console.ReadKey(true).Key)
                 {
                     case ConsoleKey.Spacebar:
                         Console.Clear();
                         return;
                     case ConsoleKey.Escape:
                         Environment.Exit(0);
+                        break;
+                    default:
                         break;
                 }
             }

@@ -23,7 +23,7 @@ namespace Enlashceoc
         static void MenuController()
         {
             Console.Clear(); //remove traces of previous UI,
-                             //for ex. scoreboard
+                             //for example Scoreboard
             List<string> menuActions = new List<string>
             {
                 //new game

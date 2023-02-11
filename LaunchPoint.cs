@@ -4,10 +4,10 @@
     {
         static void Main(string[] args)
         {
-            //global configuration
+            // Global configuration
             Console.Title = "Enlashceoc";
             Console.TreatControlCAsInput = false;
-            //call main menu
+            // Call main menu
             _ = new Menu();
         }
     }

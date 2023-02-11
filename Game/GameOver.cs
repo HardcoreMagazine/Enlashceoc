@@ -150,7 +150,7 @@ namespace Enlashceoc.Game
             {
                 //create 'you win!' or 'game over' headers/titles
                 GenerateGameOverUIHeader(playtime, titleText);
-                //ask for player name if player won && name is empty 
+                //ask for player name if player won & name is empty 
                 //also: *in any case* print menu actions
                 if (playerWin & string.IsNullOrWhiteSpace(playerName))
                     playerName = GenerateGameOverUIBody(menuActions[selection], true)!;
@@ -179,7 +179,7 @@ namespace Enlashceoc.Game
                 }
                 if (loopComplete)
                 {
-                    if (playerWin) //save score only if player wins
+                    if (playerWin) //* Save score only if player wins
                         SaveScore(playerName, playtime);
                     switch (selection)
                     {

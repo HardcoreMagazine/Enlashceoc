@@ -8,6 +8,14 @@
     /// </summary>
     static class RandomExtensions
     {
+        /// <summary>
+        /// Shuffles selected array.
+        /// Use: 
+        /// <code>
+        /// Random rng = new Random(); 
+        /// rng.ShuffleArray(myArray); 
+        /// </code>
+        /// </summary>
         public static void ShuffleArray<T>(this Random rng, T[] array)
         {
             int n = array.Length;
@@ -20,6 +28,14 @@
             }
         }
 
+        /// <summary>
+        /// Shuffles selected list.
+        /// Use: 
+        /// <code>
+        /// Random rng = new Random(); 
+        /// rng.ShuffleArray(myList); 
+        /// </code>
+        /// </summary>
         public static void ShuffleList<T>(this Random rng, List<T> list)
         {
             int n = list.Count;

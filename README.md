@@ -27,7 +27,9 @@ but I'm satisfied with the results and most likely discontinue the development.
 
 ---
 ### Download & compatibility
-+ in progress
++ [.NET 6 dependant version](https://github.com/HardcoreMagazine/Enlashceoc/releases/download/v1.0/Enlashceoc_game.zip) 
+[tested on Windows 10 x64, may not work on other systems/architectures]
++ [.NET 6 independant version](https://github.com/HardcoreMagazine/Enlashceoc/releases/download/v.1.0-portable/Enlashceoc.zip) [built for Windows x64 systems only]
 
 ---
 ### List of known issues (wont be fixed)

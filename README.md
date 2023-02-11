@@ -1,7 +1,4 @@
 ![](images/game_title.png)
-<p align="center">
-  <img src="images/game_title.png"/>
-</p>
 
 ##### No one asked...
 #### No one waited...

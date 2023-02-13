@@ -16,8 +16,7 @@ project turned out to be full-size 2D game with procedural
 level generation and home-grown text graphics engine (kind of).  
 Personally, I had a lot of fun exploring, building and testing this project. 
 I even discovered *random image creation algorithm* (by accident)
-during main stage of project "LevelGenerator", which will be 
-uploaded later using [this](https://github.com/HardcoreMagazine) account.  
+during main stage of project "LevelGenerator" - [link](https://github.com/HardcoreMagazine/RandomImageGenerator).  
 Overall, this might not be the best realization of maze game project, 
 but I'm satisfied with the results and most likely discontinue the development.
 

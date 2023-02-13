@@ -13,7 +13,7 @@
         private static char[] field;
         private static int[] edges;
         private static int mazeEntry, mazeExit;
-        private static int fieldSizeX = 120, fieldSizeY; //default: 120x30 or 120x28
+        private const int w = 120, h = 28; //default: 120x28
         private const int multiplier = 2, DENSITY = 4;
         // multimpier: !DANGER ZONE!
         // points on 'edge' area size: 2x2, 3x3,...
@@ -50,15 +50,10 @@
         /// </summary>
         private static int GetPos(int X, int Y)
         {
-            if (X == fieldSizeX & Y == fieldSizeY - 1)
-                return fieldSizeX * fieldSizeY - 1;
-            else if (Y == fieldSizeY)
-                if (X == fieldSizeX)
-                    return fieldSizeX * fieldSizeY - 1;
-                else
-                    return (Y - 1) * fieldSizeX + X;
+            if (X == w - 1 & Y == h - 1)
+                return w * h - 1;
             else
-                return Y * fieldSizeX + X;
+                return Y * w + X;
         }
 
         /// <summary>
@@ -67,8 +62,8 @@
         /// </summary>
         private static int[] ReversePos(int index)
         {
-            int posX = index % fieldSizeX;
-            int posY = (index - posX) / fieldSizeX;
+            int posX = index % w;
+            int posY = (index - posX) / w;
             return new int[] { posX, posY };
         }
 
@@ -78,9 +73,9 @@
         /// <param name="c">Override character</param>
         private static void FillField(char c)
         {
-            for (int y = 0; y < fieldSizeY; y++)
+            for (int y = 0; y < h; y++)
             {
-                for (int x = 0; x < fieldSizeX; x++)
+                for (int x = 0; x < w; x++)
                 {
                     field[GetPos(x, y)] = c;
                 }
@@ -95,8 +90,8 @@
         private static int[] CalculateEdges()
         {
             List<int> indeces = new List<int>();
-            for (int y = 0; y < fieldSizeY; y++)
-                for (int x = 0; x < fieldSizeX; x++)
+            for (int y = 0; y < h; y++)
+                for (int x = 0; x < w; x++)
                     if (y % multiplier == 0 & x % multiplier == 0)
                         indeces.Add(GetPos(x, y));
             return indeces.ToArray();
@@ -112,8 +107,8 @@
             List<int> possibleExits = new List<int>();
             for (int i = 0; i < edges.Length; i++)
             {
-                if (edges[i] % fieldSizeX == 0) possibleEntrances.Add(edges[i]);
-                else if (ReversePos(edges[i])[0] == fieldSizeX - multiplier) possibleExits.Add(edges[i]);
+                if (edges[i] % w == 0) possibleEntrances.Add(edges[i]);
+                else if (ReversePos(edges[i])[0] == w - multiplier) possibleExits.Add(edges[i]);
             }
             rng.ShuffleList(possibleEntrances);
             rng.ShuffleList(possibleExits);
@@ -144,18 +139,18 @@
         {
             List<int> directons = new List<int>();
             int yPos = ReversePos(index)[1];
-            if (index + fieldSizeX * multiplier < field.Length)
-                if (visits[index + fieldSizeX * multiplier] < DENSITY)
-                    directons.Add(multiplier * fieldSizeX);
+            if (index + w * multiplier < field.Length)
+                if (visits[index + w * multiplier] < DENSITY)
+                    directons.Add(multiplier * w);
             if (index + multiplier < field.Length & ReversePos(index + multiplier)[1] == yPos)
                 if (visits[index + multiplier] < DENSITY)
                     directons.Add(multiplier);
             if (index - multiplier >= 0 & ReversePos(index - multiplier)[1] == yPos)
                 if (visits[index - multiplier] < DENSITY)
                     directons.Add(-multiplier);
-            if (index - fieldSizeX * multiplier >= 0)
-                if (visits[index - fieldSizeX * multiplier] < DENSITY)
-                    directons.Add(-multiplier * fieldSizeX);
+            if (index - w * multiplier >= 0)
+                if (visits[index - w * multiplier] < DENSITY)
+                    directons.Add(-multiplier * w);
             return directons.ToArray();
         }
 
@@ -184,17 +179,17 @@
 
                     int[] revPos = ReversePos(index + nextIndex);
                     // Pathway correction & printing
-                    if (revPos[0] == fieldSizeX - multiplier & nextIndex == multiplier)
+                    if (revPos[0] == w - multiplier & nextIndex == multiplier)
                     {
                         // if X == 120-2
                         // and nextIndex == 2 (no abs) -> move to X = 119:
                         WalkCells(index, index + nextIndex + 1, nextIndex / multiplier);
                     }
-                    else if (revPos[1] == fieldSizeY - multiplier & nextIndex == fieldSizeX * multiplier)
+                    else if (revPos[1] == h - multiplier & nextIndex == w * multiplier)
                     {
                         // if Y = 26 (pre-bottom line)
                         // and nextIndex == 240 (no abs) -> move to Y = 27:
-                        WalkCells(index, index + nextIndex + fieldSizeX, nextIndex / multiplier);
+                        WalkCells(index, index + nextIndex + w, nextIndex / multiplier);
                     }
                     else
                     {
@@ -208,15 +203,22 @@
             }
         }
 
-        public LevelGenerator(int mazeSizeY = 28)
+        public LevelGenerator()
         {
-            fieldSizeY = mazeSizeY;
-            field = new char[fieldSizeX * fieldSizeY];
+            field = new char[w * h];
             FillField(' ');
             edges = CalculateEdges();
             CreatePathways();
             space = field;
             playerIndex = mazeEntry;
         }
+        /* Basically how my algorithm works (in theory):
+         * 1. create a 'graph' 120 * 28 dots
+         * 2. select graph edges (here: edge is a center of square area 2x2 dots)
+         * 3. assign each edge a number - amount of 'visits', starting with 1
+         * 4. select edge and movement direction at random (within acceptable bounds)
+         * 5. increase visit count on selected edge, move, increase visit count on direction edge
+         * 6. repeat steps 4-5 until all edges has been visited at least 2 times 
+         */
     }
 }
